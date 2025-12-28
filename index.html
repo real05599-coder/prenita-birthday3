@@ -16,6 +16,8 @@ body{
   background:linear-gradient(135deg,#ff9a9e,#fad0c4);
   overflow:hidden;
 }
+
+/* ===== Main Card ===== */
 .card{
   background:rgba(255,255,255,0.95);
   padding:25px;
@@ -26,8 +28,10 @@ body{
   box-shadow:0 15px 35px rgba(0,0,0,0.25);
   animation:fadeIn 0.8s ease;
 }
-h1{margin-bottom:10px;color:#4a1c2f;}
+
+h1{color:#4a1c2f;margin-bottom:10px;}
 p{color:#4a1c2f;}
+
 input{
   padding:10px;
   width:80%;
@@ -35,6 +39,7 @@ input{
   border:1px solid #ccc;
   font-size:1rem;
 }
+
 button{
   margin-top:10px;
   padding:10px 20px;
@@ -46,9 +51,18 @@ button{
   cursor:pointer;
 }
 button:hover{background:#e84370;}
-.error{color:#b0003a;margin-top:10px;font-style:italic;}
 
-.cake{font-size:2rem;margin-top:15px;}
+.error{
+  color:#b0003a;
+  margin-top:10px;
+  font-style:italic;
+}
+
+/* ===== Cake ===== */
+.cake{
+  font-size:2rem;
+  margin-top:15px;
+}
 .candle{
   display:inline-block;
   margin:0 2px;
@@ -65,7 +79,7 @@ button:hover{background:#e84370;}
   50%{opacity:0.6}
 }
 
-/* ===== Diary ===== */
+/* ===== Diary Overlay ===== */
 #diaryOverlay{
   position:fixed;
   inset:0;
@@ -75,39 +89,88 @@ button:hover{background:#e84370;}
   align-items:center;
   z-index:999;
 }
+
 .diary{
   width:90%;
   max-width:420px;
-  background:#fffaf5;
-  padding:25px;
-  border-radius:18px;
-  text-align:center;
-  box-shadow:0 20px 40px rgba(0,0,0,0.4);
-  animation:openDiary 0.8s ease;
   cursor:pointer;
+  animation:openDiary 0.8s ease;
 }
-.diary h2{
-  margin-bottom:5px;
-  color:#4a1c2f;
+
+/* ===== Paper Look ===== */
+.paper{
+  background:#fffdf6;
+  padding:35px 28px;
+  border-radius:14px;
+  color:#3b2a2a;
+  font-family:'Segoe Script','Comic Sans MS',cursive;
+  position:relative;
+  box-shadow:
+    inset 0 0 0 1px rgba(0,0,0,0.08),
+    0 25px 45px rgba(0,0,0,0.35);
 }
-.diary small{
+
+/* notebook lines */
+.paper::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 24px,
+      rgba(0,0,0,0.05) 25px
+    );
+  border-radius:14px;
+  pointer-events:none;
+}
+
+/* subtle ink bleed */
+.paper::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 30% 20%, rgba(0,0,0,0.03), transparent 60%);
+  pointer-events:none;
+}
+
+.paper h2{
+  margin-top:0;
+  font-size:1.55rem;
+  font-weight:400;
+  letter-spacing:0.5px;
+}
+
+.paper small{
+  display:block;
   opacity:0.6;
+  margin-bottom:20px;
+  font-style:italic;
 }
+
 #pageText{
-  margin-top:20px;
-  font-size:1.05rem;
-  line-height:1.6;
-  color:#4a1c2f;
-  min-height:120px;
+  font-size:1.1rem;
+  line-height:1.9;
+  min-height:140px;
   animation:pageFlip 0.6s ease;
 }
 
+/* page number */
+.page-number{
+  position:absolute;
+  bottom:10px;
+  right:18px;
+  font-size:0.8rem;
+  opacity:0.5;
+}
+
 @keyframes openDiary{
-  from{transform:scale(0.7);opacity:0}
-  to{transform:scale(1);opacity:1}
+  from{transform:scale(0.7) rotateX(10deg);opacity:0}
+  to{transform:scale(1) rotateX(0);opacity:1}
 }
 @keyframes pageFlip{
-  from{opacity:0;transform:rotateY(20deg)}
+  from{opacity:0;transform:rotateY(25deg)}
   to{opacity:1;transform:rotateY(0)}
 }
 </style>
@@ -117,45 +180,50 @@ button:hover{background:#e84370;}
 
 <div class="card" id="app"></div>
 
-<!-- DIARY -->
+<!-- ===== Diary ===== -->
 <div id="diaryOverlay">
   <div class="diary" onclick="nextPage()">
-    <h2>20 Reasons Why I Like You</h2>
-    <small>(tap to open)</small>
-    <div id="pageText"></div>
+    <div class="paper">
+      <div class="page-number" id="pageNo"></div>
+      <h2>15 reasons why i like you</h2>
+      <small id="tapHint">(tap to open)</small>
+      <div id="pageText"></div>
+    </div>
   </div>
 </div>
 
 <script>
 const app = document.getElementById("app");
-
 let totalCandles = 0;
 let blown = 0;
 
-/* ===== Diary Content (EDIT HERE ONLY) ===== */
+/* ===== Diary Pages ===== */
 const diaryPages = [
-"I like you because you’re kind, even when no one is watching.",
-"I like you because you listen, not just hear.",
-"I like you because you’re real—no fake vibes.",
-"I like you because you care deeply, even if you don’t always show it.",
-"I like you because talking to you feels easy and natural.",
-"I like you because you respect people’s feelings.",
-"I like you because you make me feel comfortable being myself.",
-"I like you because you have a beautiful heart.",
-"I like you because you’re strong in your own quiet way.",
-"I like you because you notice small things.",
-"I like you because you’re thoughtful and caring.",
-"I like you because you inspire me to be better.",
-"I like you because you’re unique—there’s no one like you.",
-"I like you because I feel happy when I talk to you.",
-"And honestly… I like you because you’re you. 💖"
+  "Dear You,\n\nI don’t know when it started… but these are a few honest reasons why I like you.",
+
+  "I like you because you’re kind, even when no one is watching.",
+  "I like you because you listen, not just hear.",
+  "I like you because you’re real — no fake vibes.",
+  "I like you because you care deeply, even if you don’t always show it.",
+  "I like you because talking to you feels easy and natural.",
+  "I like you because you respect people’s feelings.",
+  "I like you because you make me feel comfortable being myself.",
+  "I like you because you have a beautiful heart.",
+  "I like you because you’re strong in your own quiet way.",
+  "I like you because you notice small things.",
+  "I like you because you’re thoughtful and caring.",
+  "I like you because you inspire me to be better.",
+  "I like you because you’re unique — there’s no one like you.",
+  "I like you because I feel happy when I talk to you.",
+
+  "And honestly…\n\nI like you because you’re you.\n\nThis diary ends here,\nbut my reasons never will. 🤍"
 ];
 
 let pageIndex = -1;
 
 /* ===== Flow ===== */
 function askName(){
-  app.innerHTML=`
+  app.innerHTML = `
     <h1>Hey Beautiful 💕</h1>
     <p>Enter your nickname to unlock something special ✨</p>
     <input id="nameInput" placeholder="Your nickname..." />
@@ -166,16 +234,16 @@ function askName(){
 }
 
 function checkName(){
-  const val = document.getElementById("nameInput").value.trim().toLowerCase();
-  if(val==="the prenita"){
+  const v = document.getElementById("nameInput").value.trim().toLowerCase();
+  if(v === "the prenita"){
     askAge();
-  }else{
-    document.getElementById("error").innerText="Hmm… try again 💗";
+  } else {
+    document.getElementById("error").innerText = "Hmm… try again 💗";
   }
 }
 
 function askAge(){
-  app.innerHTML=`
+  app.innerHTML = `
     <h1>Hello, The Prenita 💫</h1>
     <p>Tell me your age 🎂</p>
     <input type="number" id="ageInput" placeholder="Your age..." />
@@ -186,16 +254,17 @@ function askAge(){
 
 function showCake(){
   const age = parseInt(document.getElementById("ageInput").value);
-  if(!age || age<=0 || age>50) return;
+  if(!age || age <= 0 || age > 50) return;
+
   totalCandles = age;
   blown = 0;
 
-  let candles="";
+  let candles = "";
   for(let i=0;i<age;i++){
-    candles+=`<span class="candle" onclick="blow(this)">🕯️</span>`;
+    candles += `<span class="candle" onclick="blow(this)">🕯️</span>`;
   }
 
-  app.innerHTML=`
+  app.innerHTML = `
     <h1>Happy Birthday 🎉💖</h1>
     <p>Make a wish… and blow the candles ✨</p>
     <div class="cake">🎂<br>${candles}</div>
@@ -203,27 +272,36 @@ function showCake(){
 }
 
 function blow(c){
-  if(c.innerText==="💨") return;
-  c.innerText="💨";
+  if(c.innerText === "💨") return;
+  c.innerText = "💨";
   blown++;
-  if(blown===totalCandles){
+  if(blown === totalCandles){
     setTimeout(openDiary,600);
   }
 }
 
 /* ===== Diary Logic ===== */
 function openDiary(){
-  document.getElementById("diaryOverlay").style.display="flex";
+  document.getElementById("diaryOverlay").style.display = "flex";
   nextPage();
 }
 
 function nextPage(){
   pageIndex++;
-  const page = document.getElementById("pageText");
+  const text = document.getElementById("pageText");
+  const pageNo = document.getElementById("pageNo");
+  const hint = document.getElementById("tapHint");
+
+  if(pageIndex === 0){
+    hint.innerText = "(tap anywhere)";
+  }
+
   if(pageIndex < diaryPages.length){
-    page.innerText = diaryPages[pageIndex];
-  }else{
-    page.innerHTML="💫 That’s all… but my feelings don’t end here.";
+    text.innerText = diaryPages[pageIndex];
+    pageNo.innerText = pageIndex + 1;
+  } else {
+    text.innerText = "💫";
+    pageNo.innerText = "";
   }
 }
 
